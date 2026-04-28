@@ -14,14 +14,17 @@ class HYIP_Loader {
         require_once HYIP_PLUGIN_PATH . 'includes/class-deposits.php';
         require_once HYIP_PLUGIN_PATH . 'includes/class-razorpay.php';
         require_once HYIP_PLUGIN_PATH . 'includes/class-payment-handler.php';
+        require_once HYIP_PLUGIN_PATH . 'includes/class-withdrawals.php';
         require_once HYIP_PLUGIN_PATH . 'admin/class-admin-menu.php';
         require_once HYIP_PLUGIN_PATH . 'admin/class-settings.php';
+        require_once HYIP_PLUGIN_PATH . 'admin/class-withdrawals-admin.php';
         require_once HYIP_PLUGIN_PATH . 'public/class-public.php';
     }
 
     private function init_hooks() {
         add_action('admin_menu', ['HYIP_Admin_Menu', 'register_menu']);
         add_action('admin_menu', ['HYIP_Settings', 'register']);
+        add_action('admin_menu', ['HYIP_Withdrawals_Admin', 'register']);
         add_action('user_register', ['HYIP_Wallet', 'create_wallet']);
 
         if (!wp_next_scheduled('hyip_daily_roi')) {
