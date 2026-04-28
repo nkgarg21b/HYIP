@@ -13,6 +13,16 @@ class HYIP_Database {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         ) $charset_collate;";
 
+        $table_logs = $wpdb->prefix . 'hyip_error_logs';
+
+$sql_logs = "CREATE TABLE $table_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    message TEXT,
+    created_at DATETIME
+) $charset_collate;";
+
+dbDelta($sql_logs);
+
         $table_txn = $wpdb->prefix . 'hyip_transactions';
         $sql2 = "CREATE TABLE $table_txn (
             id BIGINT AUTO_INCREMENT PRIMARY KEY,
