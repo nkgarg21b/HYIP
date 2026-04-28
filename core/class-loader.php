@@ -12,6 +12,7 @@ class HYIP_Loader {
         require_once HYIP_PLUGIN_PATH . 'includes/class-plans.php';
         require_once HYIP_PLUGIN_PATH . 'includes/class-investments.php';
         require_once HYIP_PLUGIN_PATH . 'admin/class-admin-menu.php';
+        require_once HYIP_PLUGIN_PATH . 'public/class-public.php';
     }
 
     private function init_hooks() {
@@ -22,5 +23,7 @@ class HYIP_Loader {
             wp_schedule_event(time(), 'daily', 'hyip_daily_roi');
         }
         add_action('hyip_daily_roi', ['HYIP_Investments', 'process_daily_roi']);
+
+        new HYIP_Public();
     }
 }
