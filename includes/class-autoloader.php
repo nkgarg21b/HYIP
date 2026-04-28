@@ -14,7 +14,8 @@ class HYIP_Autoloader {
         $paths = [
             HYIP_PLUGIN_PATH . 'includes/class-' . $base . '.php',
             HYIP_PLUGIN_PATH . 'admin/class-' . $base . '.php',
-            HYIP_PLUGIN_PATH . 'public/class-' . $base . '.php'
+            HYIP_PLUGIN_PATH . 'public/class-' . $base . '.php',
+            HYIP_PLUGIN_PATH . 'core/class-' . $base . '.php'
         ];
 
         foreach ($paths as $file) {
