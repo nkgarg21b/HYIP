@@ -21,12 +21,20 @@ class HYIP_Loader {
         require_once HYIP_PLUGIN_PATH . 'includes/class-payout-processor.php';
         require_once HYIP_PLUGIN_PATH . 'includes/class-cashfree-webhook.php';
         require_once HYIP_PLUGIN_PATH . 'includes/class-reconciliation.php';
+        require_once HYIP_PLUGIN_PATH . 'includes/class-fraud-detector.php';
+
         require_once HYIP_PLUGIN_PATH . 'admin/class-admin-menu.php';
         require_once HYIP_PLUGIN_PATH . 'admin/class-settings.php';
         require_once HYIP_PLUGIN_PATH . 'admin/class-withdrawals-admin.php';
         require_once HYIP_PLUGIN_PATH . 'admin/class-withdrawals-admin-v2.php';
         require_once HYIP_PLUGIN_PATH . 'admin/class-kyc-admin.php';
+        require_once HYIP_PLUGIN_PATH . 'admin/class-dashboard-analytics.php';
+        require_once HYIP_PLUGIN_PATH . 'admin/class-shortcodes-page.php';
+
         require_once HYIP_PLUGIN_PATH . 'public/class-public.php';
+        require_once HYIP_PLUGIN_PATH . 'public/class-kyc-ui.php';
+        require_once HYIP_PLUGIN_PATH . 'public/class-withdrawal-ui.php';
+        require_once HYIP_PLUGIN_PATH . 'public/class-wallet-ui.php';
     }
 
     private function init_hooks() {
@@ -35,6 +43,9 @@ class HYIP_Loader {
         add_action('admin_menu', ['HYIP_Withdrawals_Admin', 'register']);
         add_action('admin_menu', ['HYIP_Withdrawals_Admin_V2', 'register']);
         add_action('admin_menu', ['HYIP_KYC_Admin', 'register']);
+        add_action('admin_menu', ['HYIP_Dashboard_Analytics', 'register']);
+        add_action('admin_menu', ['HYIP_Shortcodes_Page', 'register']);
+
         add_action('user_register', ['HYIP_Wallet', 'create_wallet']);
 
         if (!wp_next_scheduled('hyip_daily_roi')) {
@@ -42,7 +53,6 @@ class HYIP_Loader {
         }
         add_action('hyip_daily_roi', ['HYIP_Investments', 'process_daily_roi']);
 
-        // 🔄 Reconciliation Cron (10 min)
         add_filter('cron_schedules', function($schedules) {
             $schedules['ten_minutes'] = [
                 'interval' => 600,
@@ -59,7 +69,6 @@ class HYIP_Loader {
         add_action('admin_post_nopriv_hyip_payment_callback', ['HYIP_Payment_Handler', 'handle_callback']);
         add_action('admin_post_hyip_payment_callback', ['HYIP_Payment_Handler', 'handle_callback']);
 
-        // Cashfree webhook endpoint
         add_action('init', function() {
             if (isset($_GET['hyip_webhook']) && $_GET['hyip_webhook'] == 'cashfree') {
                 HYIP_Cashfree_Webhook::handle();
