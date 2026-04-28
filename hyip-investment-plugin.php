@@ -33,3 +33,16 @@ function run_hyip_plugin() {
 }
 
 run_hyip_plugin();
+
+register_activation_hook(__FILE__, function() {
+    add_option('hyip_setup_required', true);
+});
+
+add_action('admin_init', function() {
+    if (get_option('hyip_setup_required')) {
+        delete_option('hyip_setup_required');
+
+        wp_redirect(admin_url('admin.php?page=hyip-setup'));
+        exit;
+    }
+});
