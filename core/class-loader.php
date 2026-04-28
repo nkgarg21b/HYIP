@@ -9,11 +9,18 @@ class HYIP_Loader {
         require_once HYIP_PLUGIN_PATH . 'includes/database.php';
         require_once HYIP_PLUGIN_PATH . 'includes/class-wallet.php';
         require_once HYIP_PLUGIN_PATH . 'includes/class-transactions.php';
+        require_once HYIP_PLUGIN_PATH . 'includes/class-plans.php';
+        require_once HYIP_PLUGIN_PATH . 'includes/class-investments.php';
         require_once HYIP_PLUGIN_PATH . 'admin/class-admin-menu.php';
     }
 
     private function init_hooks() {
         add_action('admin_menu', ['HYIP_Admin_Menu', 'register_menu']);
         add_action('user_register', ['HYIP_Wallet', 'create_wallet']);
+
+        if (!wp_next_scheduled('hyip_daily_roi')) {
+            wp_schedule_event(time(), 'daily', 'hyip_daily_roi');
+        }
+        add_action('hyip_daily_roi', ['HYIP_Investments', 'process_daily_roi']);
     }
 }
