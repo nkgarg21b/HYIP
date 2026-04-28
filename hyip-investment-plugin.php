@@ -39,10 +39,22 @@ register_activation_hook(__FILE__, function() {
 });
 
 add_action('admin_init', function() {
+
+    // ✅ Only allow admins
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+
+    // ✅ Only run after activation (not during sandbox)
     if (get_option('hyip_setup_required')) {
+
         delete_option('hyip_setup_required');
 
-        wp_redirect(admin_url('admin.php?page=hyip-setup'));
-        exit;
+        // Prevent redirect during bulk activation
+        if (!isset($_GET['activate-multi'])) {
+
+            wp_safe_redirect(admin_url('admin.php?page=hyip-setup'));
+            exit;
+        }
     }
 });
