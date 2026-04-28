@@ -6,6 +6,7 @@ class HYIP_Public {
         add_shortcode('hyip_kyc', ['HYIP_KYC_UI', 'render']);
         add_shortcode('hyip_withdraw', ['HYIP_Withdrawal_UI', 'render']);
         add_shortcode('hyip_wallet', ['HYIP_Wallet_UI', 'render']);
+        add_shortcode('hyip_transactions', ['HYIP_Transaction_UI', 'render']);
     }
 
     public function dashboard() {
@@ -40,6 +41,7 @@ class HYIP_Public {
         echo '<a href="/kyc">KYC</a>';
         echo '<a href="/withdraw">Withdraw</a>';
         echo '<a href="/wallet">Wallet</a>';
+        echo '<a href="/transactions">Transactions</a>';
         echo '</div>';
 
         include HYIP_PLUGIN_PATH . 'public/payment-ui.php';
