@@ -2,6 +2,8 @@
 class HYIP_Cashfree_Webhook {
 
     public static function handle() {
+        global $wpdb;
+
         $payload = file_get_contents('php://input');
         $data = json_decode($payload, true);
 
@@ -17,13 +19,28 @@ class HYIP_Cashfree_Webhook {
             exit('Invalid signature');
         }
 
-        // Validate payload
+        // 🔁 Replay Protection
+        $event_id = isset($data['transfer']['referenceId']) ? $data['transfer']['referenceId'] : '';
+        $log_table = $wpdb->prefix . 'hyip_webhook_events';
+
+        if ($event_id) {
+            $exists = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $log_table WHERE event_id=%s", $event_id));
+            if ($exists) {
+                status_header(200);
+                exit('Duplicate ignored');
+            }
+
+            $wpdb->insert($log_table, [
+                'event_id' => $event_id,
+                'created_at' => current_time('mysql')
+            ]);
+        }
+
         if (!isset($data['transfer']['transferId'])) {
             status_header(400);
             exit('Invalid payload');
         }
 
-        global $wpdb;
         $table = $wpdb->prefix . 'hyip_withdrawals';
 
         $transferId = $data['transfer']['transferId'];
