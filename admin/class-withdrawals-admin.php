@@ -14,8 +14,20 @@ class HYIP_Withdrawals_Admin {
 
     public static function page() {
         if (isset($_GET['approve'])) {
-            HYIP_Withdrawals::approve(intval($_GET['approve']));
-            echo '<div class="updated"><p>Approved</p></div>';
+            global $wpdb;
+            $id = intval($_GET['approve']);
+            $table = $wpdb->prefix . 'hyip_withdrawals';
+            $withdrawal = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id=%d", $id));
+
+            $result = HYIP_Cashfree::payout($withdrawal);
+
+            if (isset($result['status']) && $result['status'] == 'SUCCESS') {
+                HYIP_Withdrawals::approve($id);
+                echo '<div class="updated"><p>Payout Success</p></div>';
+            } else {
+                HYIP_Withdrawals::reject($id);
+                echo '<div class="error"><p>Payout Failed - Refunded</p></div>';
+            }
         }
 
         if (isset($_GET['reject'])) {
@@ -38,7 +50,7 @@ class HYIP_Withdrawals_Admin {
             echo '<td>';
 
             if ($w->status == 'pending') {
-                echo '<a href="?page=hyip-withdrawals&approve='.$w->id.'">Approve</a> | ';
+                echo '<a href="?page=hyip-withdrawals&approve='.$w->id.'">Approve & Pay</a> | ';
                 echo '<a href="?page=hyip-withdrawals&reject='.$w->id.'">Reject</a>';
             }
 
