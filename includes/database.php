@@ -53,6 +53,9 @@ class HYIP_Database {
             user_id BIGINT,
             amount DECIMAL(18,2),
             status VARCHAR(20),
+            payout_id VARCHAR(100),
+            payout_status VARCHAR(20),
+            attempt_count INT DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         ) $charset_collate;";
 
@@ -68,11 +71,22 @@ class HYIP_Database {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         ) $charset_collate;";
 
+        $table_logs = $wpdb->prefix . 'hyip_payout_logs';
+        $sql7 = "CREATE TABLE $table_logs (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            withdrawal_id BIGINT,
+            request_payload TEXT,
+            response_payload TEXT,
+            status VARCHAR(20),
+            created_at DATETIME
+        ) $charset_collate;";
+
         dbDelta($sql1);
         dbDelta($sql2);
         dbDelta($sql3);
         dbDelta($sql4);
         dbDelta($sql5);
         dbDelta($sql6);
+        dbDelta($sql7);
     }
 }
