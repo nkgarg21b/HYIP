@@ -15,10 +15,10 @@ class HYIP_Dashboard_Analytics {
     public static function page() {
         global $wpdb;
 
-        $wallet_table = $wpdb->prefix . 'hyip_wallet';
         $withdraw_table = $wpdb->prefix . 'hyip_withdrawals';
         $txn_table = $wpdb->prefix . 'hyip_transactions';
         $kyc_table = $wpdb->prefix . 'hyip_kyc';
+        $flags_table = $wpdb->prefix . 'hyip_risk_flags';
 
         $total_deposits = $wpdb->get_var("SELECT SUM(amount) FROM $txn_table WHERE type='deposit' AND status='success'");
         $total_withdrawals = $wpdb->get_var("SELECT SUM(amount) FROM $withdraw_table WHERE status='approved'");
@@ -28,6 +28,8 @@ class HYIP_Dashboard_Analytics {
         $total_users = $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->users}");
         $kyc_approved = $wpdb->get_var("SELECT COUNT(*) FROM $kyc_table WHERE status='approved'");
         $kyc_pending = $wpdb->get_var("SELECT COUNT(*) FROM $kyc_table WHERE status='pending'");
+
+        $recent_flags = $wpdb->get_results("SELECT * FROM $flags_table ORDER BY created_at DESC LIMIT 10");
 
         echo '<h1>HYIP Analytics Dashboard</h1>';
 
@@ -45,6 +47,25 @@ class HYIP_Dashboard_Analytics {
         self::card('KYC Approved', $kyc_approved);
         self::card('KYC Pending', $kyc_pending);
         echo '</div>';
+
+        echo '<h2>⚠️ Fraud Alerts (Recent)</h2>';
+        echo '<table border="1" cellpadding="10">';
+        echo '<tr><th>User</th><th>Withdrawal ID</th><th>Flag</th><th>Time</th></tr>';
+
+        if ($recent_flags) {
+            foreach ($recent_flags as $f) {
+                echo '<tr>';
+                echo '<td>'.$f->user_id.'</td>';
+                echo '<td>'.$f->withdrawal_id.'</td>';
+                echo '<td style="color:red;font-weight:bold;">'.$f->flag_type.'</td>';
+                echo '<td>'.$f->created_at.'</td>';
+                echo '</tr>';
+            }
+        } else {
+            echo '<tr><td colspan="4">No fraud alerts</td></tr>';
+        }
+
+        echo '</table>';
     }
 
     private static function card($title, $value) {
