@@ -18,6 +18,9 @@ class HYIP_Public {
 
         echo "<h2>Your Balance: ₹$balance</h2>";
 
+        // Deposit UI
+        include HYIP_PLUGIN_PATH . 'public/payment-ui.php';
+
         echo "<h3>Available Plans</h3>";
 
         foreach ($plans as $plan) {
