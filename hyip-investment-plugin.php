@@ -13,6 +13,7 @@ define('HYIP_PLUGIN_URL', plugin_dir_url(__FILE__));
 // ✅ Autoloader (removes manual includes)
 require_once HYIP_PLUGIN_PATH . 'includes/class-autoloader.php';
 HYIP_Autoloader::init();
+HYIP_Error_Logger::init();
 
 // ✅ Upgrader (auto DB + version migrations)
 require_once HYIP_PLUGIN_PATH . 'includes/class-upgrader.php';
