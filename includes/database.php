@@ -56,10 +56,23 @@ class HYIP_Database {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         ) $charset_collate;";
 
+        $table_kyc = $wpdb->prefix . 'hyip_kyc';
+        $sql6 = "CREATE TABLE $table_kyc (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            user_id BIGINT,
+            pan VARCHAR(20),
+            aadhaar VARCHAR(20),
+            bank_account VARCHAR(50),
+            ifsc VARCHAR(20),
+            status VARCHAR(20),
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        ) $charset_collate;";
+
         dbDelta($sql1);
         dbDelta($sql2);
         dbDelta($sql3);
         dbDelta($sql4);
         dbDelta($sql5);
+        dbDelta($sql6);
     }
 }
