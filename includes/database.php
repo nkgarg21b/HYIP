@@ -81,6 +81,15 @@ class HYIP_Database {
             created_at DATETIME
         ) $charset_collate;";
 
+        $table_flags = $wpdb->prefix . 'hyip_risk_flags';
+        $sql8 = "CREATE TABLE $table_flags (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            user_id BIGINT,
+            withdrawal_id BIGINT,
+            flag_type VARCHAR(50),
+            created_at DATETIME
+        ) $charset_collate;";
+
         dbDelta($sql1);
         dbDelta($sql2);
         dbDelta($sql3);
@@ -88,5 +97,6 @@ class HYIP_Database {
         dbDelta($sql5);
         dbDelta($sql6);
         dbDelta($sql7);
+        dbDelta($sql8);
     }
 }
