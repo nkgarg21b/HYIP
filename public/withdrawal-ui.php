@@ -4,9 +4,9 @@ if (!is_user_logged_in()) return;
 $user_id = get_current_user_id();
 $balance = HYIP_Wallet::get_balance($user_id);
 
-$min = 500;
-$max = 50000;
-$cooldown_hours = 24;
+$min = get_option('hyip_min_withdraw', 500);
+$max = get_option('hyip_max_withdraw', 50000);
+$cooldown_hours = get_option('hyip_withdraw_cooldown', 24);
 
 $last = HYIP_Transactions::get_last_withdrawal($user_id);
 $cooldown_ok = true;
@@ -29,7 +29,19 @@ $nonce = wp_create_nonce('hyip_withdraw');
     <button type="submit" name="withdraw_btn">Request Withdrawal</button>
 </form>
 
+<h3>Your Withdrawal History</h3>
 <?php
+$history = HYIP_Withdrawals::get_user_withdrawals($user_id);
+if ($history) {
+    echo '<table border="1" cellpadding="8"><tr><th>Amount</th><th>Status</th><th>Date</th></tr>';
+    foreach ($history as $h) {
+        echo '<tr><td>₹'.$h->amount.'</td><td>'.$h->status.'</td><td>'.$h->created_at.'</td></tr>';
+    }
+    echo '</table>';
+} else {
+    echo '<p>No withdrawals yet</p>';
+}
+
 if (isset($_POST['withdraw_btn'])) {
 
     if (!isset($_POST['hyip_nonce']) || !wp_verify_nonce($_POST['hyip_nonce'], 'hyip_withdraw')) {
