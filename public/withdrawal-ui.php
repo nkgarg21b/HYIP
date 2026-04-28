@@ -2,6 +2,13 @@
 if (!is_user_logged_in()) return;
 
 $user_id = get_current_user_id();
+
+// KYC Enforcement
+if (!class_exists('HYIP_KYC') || !HYIP_KYC::is_verified($user_id)) {
+    echo "<p style='color:red;'>Complete KYC to enable withdrawals.</p>";
+    return;
+}
+
 $balance = HYIP_Wallet::get_balance($user_id);
 
 $min = get_option('hyip_min_withdraw', 500);
@@ -46,6 +53,12 @@ if (isset($_POST['withdraw_btn'])) {
 
     if (!isset($_POST['hyip_nonce']) || !wp_verify_nonce($_POST['hyip_nonce'], 'hyip_withdraw')) {
         echo "<p>Security check failed</p>";
+        return;
+    }
+
+    // Double-check backend enforcement
+    if (!HYIP_KYC::is_verified($user_id)) {
+        echo "<p>KYC not verified</p>";
         return;
     }
 
