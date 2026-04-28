@@ -21,8 +21,28 @@ class HYIP_Admin_Menu {
     }
 
     public static function dashboard_page() {
+        global $wpdb;
+
+        $wallet_table = $wpdb->prefix . 'hyip_wallet';
+        $txn_table = $wpdb->prefix . 'hyip_transactions';
+        $plans_table = $wpdb->prefix . 'hyip_plans';
+        $inv_table = $wpdb->prefix . 'hyip_investments';
+
+        $total_users = $wpdb->get_var("SELECT COUNT(*) FROM $wallet_table");
+        $total_plans = $wpdb->get_var("SELECT COUNT(*) FROM $plans_table");
+        $total_investments = $wpdb->get_var("SELECT COUNT(*) FROM $inv_table");
+        $total_transactions = $wpdb->get_var("SELECT COUNT(*) FROM $txn_table");
+
         echo '<h1>HYIP Dashboard</h1>';
-        echo '<p>System Active</p>';
+
+        echo '<div style="display:flex;gap:20px;flex-wrap:wrap;">';
+
+        echo "<div style='padding:20px;background:#fff;border:1px solid #ddd;'>Users: <strong>$total_users</strong></div>";
+        echo "<div style='padding:20px;background:#fff;border:1px solid #ddd;'>Plans: <strong>$total_plans</strong></div>";
+        echo "<div style='padding:20px;background:#fff;border:1px solid #ddd;'>Investments: <strong>$total_investments</strong></div>";
+        echo "<div style='padding:20px;background:#fff;border:1px solid #ddd;'>Transactions: <strong>$total_transactions</strong></div>";
+
+        echo '</div>';
     }
 
     public static function plans_page() {
