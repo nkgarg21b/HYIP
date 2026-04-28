@@ -10,10 +10,10 @@ class HYIP_Transaction_UI {
         $user_id = get_current_user_id();
         $table = $wpdb->prefix . 'hyip_transactions';
 
-        // ✅ Filters
-        $type = isset($_GET['type']) ? sanitize_text_field($_GET['type']) : '';
-        $from = isset($_GET['from']) ? sanitize_text_field($_GET['from']) : '';
-        $to   = isset($_GET['to']) ? sanitize_text_field($_GET['to']) : '';
+        // Filters
+        $type = $_GET['type'] ?? '';
+        $from = $_GET['from'] ?? '';
+        $to   = $_GET['to'] ?? '';
 
         $where = "WHERE user_id = %d";
         $params = [$user_id];
@@ -33,78 +33,77 @@ class HYIP_Transaction_UI {
             $params[] = $to;
         }
 
-        $query = "SELECT * FROM $table $where ORDER BY created_at DESC LIMIT 200";
-        $transactions = $wpdb->get_results($wpdb->prepare($query, ...$params));
+        // Pagination
+        $page = max(1, intval($_GET['pg'] ?? 1));
+        $limit = 20;
+        $offset = ($page - 1) * $limit;
 
-        // ✅ CSV Export
-        if (isset($_GET['export']) && $_GET['export'] === 'csv') {
-            header('Content-Type: text/csv');
-            header('Content-Disposition: attachment; filename=transactions.csv');
+        $total = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $table $where", ...$params));
 
-            $output = fopen('php://output', 'w');
-            fputcsv($output, ['Type', 'Amount', 'Status', 'Date']);
+        $query = "SELECT * FROM $table $where ORDER BY created_at DESC LIMIT %d OFFSET %d";
+        $params_with_limit = array_merge($params, [$limit, $offset]);
+        $transactions = $wpdb->get_results($wpdb->prepare($query, ...$params_with_limit));
 
-            foreach ($transactions as $tx) {
-                fputcsv($output, [$tx->type, $tx->amount, $tx->status, $tx->created_at]);
-            }
-
-            fclose($output);
-            exit;
-        }
+        // Totals
+        $total_deposit = $wpdb->get_var($wpdb->prepare("SELECT SUM(amount) FROM $table $where AND type='deposit'", ...$params));
+        $total_withdraw = $wpdb->get_var($wpdb->prepare("SELECT SUM(amount) FROM $table $where AND type='withdrawal'", ...$params));
+        $total_roi = $wpdb->get_var($wpdb->prepare("SELECT SUM(amount) FROM $table $where AND type='roi'", ...$params));
 
         ob_start();
         ?>
 
         <h2>Transaction History</h2>
 
-        <!-- 🔍 Filters -->
+        <!-- Summary Cards -->
+        <div style="display:flex;gap:20px;margin-bottom:20px;">
+            <div><strong>Deposits:</strong> ₹<?php echo $total_deposit ?: 0; ?></div>
+            <div><strong>Withdrawals:</strong> ₹<?php echo $total_withdraw ?: 0; ?></div>
+            <div><strong>ROI:</strong> ₹<?php echo $total_roi ?: 0; ?></div>
+        </div>
+
+        <!-- Filters -->
         <form method="get" style="margin-bottom:20px;">
-            <label>Type:</label>
             <select name="type">
                 <option value="">All</option>
                 <option value="deposit">Deposit</option>
                 <option value="withdrawal">Withdrawal</option>
                 <option value="roi">ROI</option>
             </select>
-
-            <label>From:</label>
             <input type="date" name="from">
-
-            <label>To:</label>
             <input type="date" name="to">
-
             <button type="submit">Apply</button>
         </form>
 
-        <!-- 📥 Export -->
-        <a href="?export=csv" style="margin-bottom:10px;display:inline-block;">
-            ⬇ Download CSV
-        </a>
-
-        <!-- 📊 Table -->
+        <!-- Table -->
         <table style="width:100%; border-collapse: collapse;">
             <tr style="background:#f5f5f5;">
-                <th style="padding:10px;border:1px solid #ddd;">Type</th>
-                <th style="padding:10px;border:1px solid #ddd;">Amount</th>
-                <th style="padding:10px;border:1px solid #ddd;">Status</th>
-                <th style="padding:10px;border:1px solid #ddd;">Date</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date</th>
             </tr>
 
-            <?php if ($transactions): ?>
-                <?php foreach ($transactions as $tx): ?>
-                    <tr>
-                        <td style="padding:10px;border:1px solid #ddd;"><?php echo esc_html($tx->type); ?></td>
-                        <td style="padding:10px;border:1px solid #ddd;">₹<?php echo esc_html($tx->amount); ?></td>
-                        <td style="padding:10px;border:1px solid #ddd;"><?php echo esc_html($tx->status); ?></td>
-                        <td style="padding:10px;border:1px solid #ddd;"><?php echo esc_html($tx->created_at); ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
+            <?php if ($transactions): foreach ($transactions as $tx): ?>
                 <tr>
-                    <td colspan="4" style="padding:10px;">No transactions found</td>
+                    <td><?php echo esc_html($tx->type); ?></td>
+                    <td>₹<?php echo esc_html($tx->amount); ?></td>
+                    <td><?php echo esc_html($tx->status); ?></td>
+                    <td><?php echo esc_html($tx->created_at); ?></td>
                 </tr>
+            <?php endforeach; else: ?>
+                <tr><td colspan="4">No transactions found</td></tr>
             <?php endif; ?>
         </table>
+
+        <!-- Pagination -->
+        <div style="margin-top:20px;">
+            <?php
+            $total_pages = ceil($total / $limit);
+            for ($i = 1; $i <= $total_pages; $i++) {
+                echo '<a style="margin-right:10px;" href="?pg='.$i.'">'.$i.'</a>';
+            }
+            ?>
+        </div>
 
         <?php
         return ob_get_clean();
