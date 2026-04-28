@@ -3,6 +3,9 @@ class HYIP_Public {
 
     public function __construct() {
         add_shortcode('hyip_dashboard', [$this, 'dashboard']);
+        add_shortcode('hyip_kyc', ['HYIP_KYC_UI', 'render']);
+        add_shortcode('hyip_withdraw', ['HYIP_Withdrawal_UI', 'render']);
+        add_shortcode('hyip_wallet', ['HYIP_Wallet_UI', 'render']);
     }
 
     public function dashboard() {
@@ -18,7 +21,8 @@ class HYIP_Public {
 
         echo "<h2>Your Balance: ₹$balance</h2>";
 
-        // Deposit UI
+        echo "<p><a href='/kyc'>KYC</a> | <a href='/withdraw'>Withdraw</a> | <a href='/wallet'>Wallet</a></p>";
+
         include HYIP_PLUGIN_PATH . 'public/payment-ui.php';
 
         echo "<h3>Available Plans</h3>";
